@@ -2,8 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<!-- שינוי: הוספת viewport-fit לתמיכה טובה יותר במסכים מודרניים -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,11 +13,8 @@
 <title>Puff & Chill</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
-/* תיקון: מניעת נעילת גובה קשיחה והתרת גלילה אנכית כדי שהקוד לא ייחתך בטאבלט */
-body { background: #0b1511; color: #e0e0e0; min-height: 100dvh; overflow-y: auto; }
-/* תיקון: שינוי ל-min-height כדי שהתוכן יוכל להתרחב מטה כשהמקלדת נפתחת */
-#playerScreen { width: 100%; min-height: 100dvh; background: #0f2119; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-
+body { background: #0b1511; color: #e0e0e0; height: 100dvh; overflow: hidden; }
+#playerScreen { width: 100%; height: 100dvh; background: #0f2119; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
 .logo { font-size: 32px; font-weight: bold; color: #ffdf94; text-shadow: 0 0 18px rgba(255,223,148,0.4); letter-spacing: 3px; margin-bottom: 40px; user-select: none; cursor: default; padding: 10px 20px; border-radius: 10px; transition: background 0.2s; }
 .logo.pressing { background: rgba(255,223,148,0.08); }
 .folders-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 500px; }
@@ -44,7 +40,6 @@ body { background: #0b1511; color: #e0e0e0; min-height: 100dvh; overflow-y: auto
 #adminLoginOverlay .grid-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 200px; }
 #adminLoginOverlay .cancel-btn { color: #8fa89b; font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 4px; }
 .admin-error { color: #d9534f; font-size: 13px; min-height: 18px; }
-/* החזרת אלמנטי האדמין המקוריים כדי למנוע קריסה */
 #adminScreen { display: none; position: fixed; inset: 0; background: #121c18; z-index: 150; flex-direction: column; overflow: hidden; }
 #adminScreen.active { display: flex; }
 .admin-header { background: #0f2119; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #b39247; }
@@ -74,7 +69,6 @@ input:checked + .slider:before { transform: translateX(24px); }
 .empty-files { color: #4a6a5a; font-size: 12px; text-align: center; padding: 6px; }
 .admin-pass-section { background: #1a2e22; border: 1px solid #b39247; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
 .admin-pass-section h3 { color: #ffdf94; font-size: 14px; margin-bottom: 10px; }
-
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
 .overlay.active { display: flex; }
 .overlay-close { position: absolute; top: 14px; left: 14px; font-size: 32px; cursor: pointer; color: #ffdf94; }
@@ -85,39 +79,4 @@ input:checked + .slider:before { transform: translateX(24px); }
 .overlay-body .txt-content { background: #0f2119; color: #c5e0c8; padding: 16px; border-radius: 8px; font-size: 14px; white-space: pre-wrap; max-height: 60vh; overflow-y: auto; min-width: 260px; }
 .file-thumb { display: flex; flex-direction: column; align-items: center; cursor: pointer; gap: 6px; }
 .file-thumb span { font-size: 12px; color: #8fa89b; max-width: 110px; text-align: center; word-break: break-all; }
-/* סגירת עיצוב ה-Toast */
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a3327; border: 1px solid #b39247; color: #e0e0e0; padding: 12px 24px; border-radius: 8px; z-index: 400; display: none; }
-.toast.active { display: block; }
-
-/* התאמה רספונסיבית חכמה למסכים אנכיים וצרים (טאבלטים וניידים) */
-@media (max-width: 1024px) {
-.logo { font-size: 26px; margin-bottom: 20px; padding: 6px 12px; }
-.folders-container { gap: 12px; max-width: 100%; }
-.folder { padding: 16px 10px; border-radius: 10px; }
-.folder .icon { font-size: 34px; margin-bottom: 6px; }
-.folder .fname { font-size: 14px; }
-.keypad-container { margin-top: 15px; gap: 10px; }
-.key { padding: 12px; font-size: 18px; }
-.code-display { height: 44px; line-height: 44px; font-size: 24px; }
-}
-</style>
-</head>
-<body>
-
-<!-- מסך המשחק / הנגן הראשי -->
-<div id="playerScreen">
-<div class="logo">Puff & Chill</div>
-<div class="folders-container"></div>
-<div class="keypad-container" id="keypadSection">
-<div class="keypad-title">הקש קוד גישה:</div>
-<div class="code-display" id="codeDisplay"></div>
-<div class="grid-keypad">
-<button class="key">1</button>
-<button class="key">2</button>
-<button class="key">3</button>
-<button class="key">4</button>
-<button class="key">5</button>
-<button class="key">6</button>
-<button class="key">7</button>
-<button class="key">8</button>
-<button class="key">9</button>
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a3327; border: 1px solid #b39247; col
