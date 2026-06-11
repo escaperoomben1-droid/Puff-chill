@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -14,30 +15,30 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { background: #0b1511; color: #e0e0e0; height: 100dvh; overflow: hidden; }
-#playerScreen { width: 100%; height: 100dvh; background: #0f2119; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-.logo { font-size: 32px; font-weight: bold; color: #ffdf94; text-shadow: 0 0 18px rgba(255,223,148,0.4); letter-spacing: 3px; margin-bottom: 40px; user-select: none; cursor: default; padding: 10px 20px; border-radius: 10px; transition: background 0.2s; }
+#playerScreen { width: 100%; height: 100dvh; background: #0f2119; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+.logo { font-size: 26px; font-weight: bold; color: #ffdf94; text-shadow: 0 0 18px rgba(255,223,148,0.4); letter-spacing: 3px; margin-bottom: 20px; user-select: none; cursor: default; padding: 8px 18px; border-radius: 10px; transition: background 0.2s; }
 .logo.pressing { background: rgba(255,223,148,0.08); }
-.folders-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 500px; }
-.folder { background: #1a3327; border: 2px solid #b39247; border-radius: 14px; padding: 24px 14px; text-align: center; cursor: pointer; transition: all 0.2s; user-select: none; }
+.folders-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; width: 100%; max-width: 500px; }
+.folder { background: #1a3327; border: 2px solid #b39247; border-radius: 14px; padding: 16px 10px; text-align: center; cursor: pointer; transition: all 0.2s; user-select: none; }
 .folder:active { background: #234737; transform: scale(0.96); }
-.folder .icon { font-size: 44px; margin-bottom: 10px; }
-.folder .fname { font-weight: bold; font-size: 16px; color: #ffdf94; }
-.folder .status { font-size: 12px; color: #8fa89b; margin-top: 5px; }
-.keypad-container { margin-top: 30px; display: none; flex-direction: column; align-items: center; gap: 14px; }
-.keypad-title { font-size: 14px; color: #8fa89b; }
-.code-display { background: #070d0a; width: 200px; height: 52px; line-height: 52px; text-align: center; font-size: 28px; color: #ffdf94; letter-spacing: 10px; border-radius: 8px; border: 1px solid #2d4a3a; }
-.grid-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 200px; }
-.key { background: #162a20; border: 1px solid #b39247; color: #e0e0e0; padding: 16px; font-size: 20px; border-radius: 8px; cursor: pointer; text-align: center; user-select: none; transition: background 0.15s; }
+.folder .icon { font-size: 36px; margin-bottom: 8px; }
+.folder .fname { font-weight: bold; font-size: 15px; color: #ffdf94; }
+.folder .status { font-size: 11px; color: #8fa89b; margin-top: 4px; }
+.keypad-container { margin-top: 12px; display: none; flex-direction: column; align-items: center; gap: 8px; }
+.keypad-title { font-size: 13px; color: #8fa89b; }
+.code-display { background: #070d0a; width: 160px; height: 40px; line-height: 40px; text-align: center; font-size: 22px; color: #ffdf94; letter-spacing: 8px; border-radius: 8px; border: 1px solid #2d4a3a; }
+.grid-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 160px; }
+.key { background: #162a20; border: 1px solid #b39247; color: #e0e0e0; padding: 10px; font-size: 17px; border-radius: 8px; cursor: pointer; text-align: center; user-select: none; transition: background 0.15s; }
 .key:active { background: #2d4a3a; }
 .key-del { background: #3a1515 !important; border-color: #d9534f !important; }
 .key-ok { background: #153a1a !important; border-color: #5cb85c !important; }
 .keypad-cancel { font-size: 12px; color: #8fa89b; cursor: pointer; text-decoration: underline; }
-#adminLoginOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+#adminLoginOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
 #adminLoginOverlay.active { display: flex; }
 #adminLoginOverlay .title { color: #ffdf94; font-size: 20px; font-weight: bold; }
 #adminLoginOverlay .subtitle { color: #8fa89b; font-size: 13px; }
-#adminLoginOverlay .code-display { background: #070d0a; width: 200px; height: 52px; line-height: 52px; text-align: center; font-size: 28px; color: #ffdf94; letter-spacing: 10px; border-radius: 8px; border: 1px solid #b39247; }
-#adminLoginOverlay .grid-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 200px; }
+#adminLoginOverlay .code-display { background: #070d0a; width: 160px; height: 40px; line-height: 40px; text-align: center; font-size: 22px; color: #ffdf94; letter-spacing: 8px; border-radius: 8px; border: 1px solid #b39247; }
+#adminLoginOverlay .grid-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 160px; }
 #adminLoginOverlay .cancel-btn { color: #8fa89b; font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 4px; }
 .admin-error { color: #d9534f; font-size: 13px; min-height: 18px; }
 #adminScreen { display: none; position: fixed; inset: 0; background: #121c18; z-index: 150; flex-direction: column; overflow: hidden; }
