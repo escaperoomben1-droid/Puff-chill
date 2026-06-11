@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puff & Chill - Tablet System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b1511; color: #e0e0e0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* חלוקת המסך לשניים לצורך תצוגה */
+        .panel { width: 50%; height: 100%; padding: 20px; display: flex; flex-direction: column; border-right: 2px solid #1a3327; }
+        .player-side { background-color: #0f2119; }
+        .admin-side { background-color: #121c18; }
+        
+        h2 { text-align: center; margin-bottom: 20px; color: #ffdf94; border-bottom: 2px solid #b39247; padding-bottom: 10px; }
+        
+        /* ממשק שחקן */
+        .logo { text-align: center; font-size: 28px; font-weight: bold; color: #ffdf94; margin-bottom: 30px; text-shadow: 0 0 10px rgba(255,223,148,0.3); }
+        .folders-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 400px; margin: 0 auto; }
+        .folder { background-color: #1a3327; border: 2px solid #b39247; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .folder:hover { background-color: #234737; transform: scale(1.05); }
+        .folder .icon { font-size: 40px; margin-bottom: 10px; }
+        .folder .status { font-size: 12px; color: #8fa89b; }
+
+        /* לוח מקשים */
+        .keypad-container { margin-top: 30px; display: none; flex-direction: column; align-items: center; }
+        .code-display { background: #070d0a; width: 200px; height: 50px; line-height: 50px; text-align: center; font-size: 24px; color: #ffdf94; letter-spacing: 5px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #234235; }
+        .grid-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 200px; }
+        .key { background: #162a20; border: 1px solid #b39247; color: white; padding: 15px; font-size: 18px; border-radius: 5px; cursor: pointer; text-align: center; }
+        .key:active { background: #234737; }
+
+        /* ממשק מנהל */
+        .admin-box { background: #162a20; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #234235; }
+        .admin-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        input[type="text"] { background: #070d0a; border: 1px solid #b39247; color: white; padding: 5px 10px; border-radius: 4px; width: 120px; text-align: center; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #5cb85c; }
+        input:checked + .slider:before { transform: translateX(26px); }
+        
+        .file-list { margin-top: 10px; font-size: 13px; background: #070d0a; padding: 5px; border-radius: 4px; }
+        .file-item { display: flex; justify-content: space-between; padding: 3px 0; color: #a3c2b2; }
+        .btn-del { color: #d9534f; cursor: pointer; }
+        .btn-add { background: #5cb85c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 5px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="panel player-side">
+        <div class="logo">PUFF & CHILL</div>
+        <div class="folders-container">
+            <div class="folder" onclick="clickFolder(1)">
+                <div class="icon">📁</div>
+                <div id="p-name-1" style="font-weight:bold;">תיקייה 1</div>
+                <div id="p-status-1" class="status">נעול 🔒</div>
+            </div>
+            <div class="folder" onclick="clickFolder(2)">
+                <div class="icon">📁</div>
+                <div id="p-name-2" style="font-weight:bold;">תיקייה 2</div>
+                <div id="p-status-2" class="status">פתוח 🔓</div>
+            </div>
+            <div class="folder" onclick="clickFolder(3)">
+                <div class="icon">📁</div>
+                <div id="p-name-3" style="font-weight:bold;">תיקייה 3</div>
+                <div id="p-status-3" class="status">פתוח 🔓</div>
+            </div>
+            <div class="folder" onclick="clickFolder(4)">
+                <div class="icon">📁</div>
+                <div id="p-name-4" style="font-weight:bold;">תיקייה 4</div>
+                <div id="p-status-4" class="status">פתוח 🔓</div>
+            </div>
+        </div>
+
+        <div class="keypad-container" id="keypadArea">
+            <div class="code-display" id="codeDisplay">====</div>
+            <div class="grid-keypad">
+                <div class="key" onclick="pressKey('1')">1</div>
+                <div class="key" onclick="pressKey('2')">2</div>
+                <div class="key" onclick="pressKey('3')">3</div>
+                <div class="key" onclick="pressKey('4')">4</div>
+                <div class="key" onclick="pressKey('5')">5</div>
+                <div class="key" onclick="pressKey('6')">6</div>
+                <div class="key" onclick="pressKey('7')">7</div>
+                <div class="key" onclick="pressKey('8')">8</div>
+                <div class="key" onclick="pressKey('9')">9</div>
+                <div class="key" style="background:#d9534f;" onclick="pressKey('C')">⌫</div>
+                <div class="key" onclick="pressKey('0')">0</div>
+                <div class="key" style="background:#5cb85c;" onclick="pressKey('E')">✓</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel admin-side">
+        <h2>הגדרות מערכת (מנהל)</h2>
+        
+        <div id="admin-folders-root"></div>
+    </div>
+
+    <script>
+        // מאגר הנתונים המקומי של האפליקציה (שומר על המצב)
+        const folderData = {
+            1: { name: "תיקייה 1", isLocked: true, code: "1111", files: ["video_clue_1.mp4"] },
+            2: { name: "תיקייה 2", isLocked: false, code: "", files: ["map_image.png"] },
+            3: { name: "תיקייה 3", isLocked: false, code: "", files: ["riddle.txt"] },
+            4: { name: "תיקייה 4", isLocked: false, code: "", files: [] }
+        };
+
+        let activeFolderId = null;
+        let currentInputCode = "";
+
+        // בניית ממשק הניהול בצורה דינמית
+        function renderAdminSettings() {
+            const root = document.getElementById('admin-folders-root');
+            root.innerHTML = "";
+            
+            for (let id in folderData) {
+                const folder = folderData[id];
+                const box = document.createElement('div');
+                box.className = 'admin-box';
+                box.innerHTML = `
+                    <div class="admin-row">
+                        <strong>הגדרות ${folder.name}</strong>
+                        <label class="switch">
+                            <input type="checkbox" ${folder.isLocked ? 'checked' : ''} onchange="toggleLock(${id}, this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="admin-row">
+                        <span>שם התיקייה:</span>
+                        <input type="text" value="${folder.name}" oninput="updateName(${id}, this.value)">
+                    </div>
+                    <div class="admin-row" style="display: ${folder.isLocked ? 'flex' : 'none'}">
+                        <span>קוד גישה:</span>
+                        <input type="text" value="${folder.code}" maxlength="4" oninput="updateCode(${id}, this.value)">
+                    </div>
+                    <div class="file-list">
+                        <div><strong>ניהול קבצים במכשיר:</strong></div>
+                        <div id="files-${id}"></div>
+                        <button class="btn-add" onclick="mockAddFile(${id})">➕ הוסף קובץ מזיכרון הטאבלט</button>
+                    </div>
+                `;
+                root.appendChild(box);
+                renderFiles(id);
+            }
+            updatePlayerUI();
+        }
+
+        function renderFiles(id) {
+            const container = document.getElementById(`files-${id}`);
+            container.innerHTML = "";
+            folderData[id].files.forEach((file, index) => {
+                container.innerHTML += `
+                    <div class="file-item">
+                        <span>📄 ${file}</span>
+                        <span class="btn-del" onclick="deleteFile(${id}, ${index})">🗑️</span>
+                    </div>
+                `;
+            });
+        }
+
+        // עדכון ממשק השחקן לפי השינויים בהגדרות
+        function updatePlayerUI() {
+            for (let id in folderData) {
+                document.getElementById(`p-name-${id}`).innerText = folderData[id].name;
+                document.getElementById(`p-status-${id}`).innerText = folderData[id].isLocked ? "נעול 🔒" : "פתוח 🔓";
+            }
+        }
+
+        // פונקציות שינוי הגדרות
+        function toggleLock(id, isChecked) { folderData[id].isLocked = isChecked; renderAdminSettings(); }
+        function updateName(id, val) { folderData[id].name = val; updatePlayerUI(); }
+        function updateCode(id, val) { folderData[id].code = val; }
+        function deleteFile(id, index) { folderData[id].files.splice(index, 1); renderFiles(id); }
+        function mockAddFile(id) { 
+            const fileName = prompt("הזן שם קובץ להדמיית העלאה מהטאבלט (לדוגמה: clue.mp4):");
+            if(fileName) { folderData[id].files.push(fileName); renderFiles(id); }
+        }
+
+        // לוגיקת משחק (לחיצות שחקן)
+        function clickFolder(id) {
+            activeFolderId = id;
+            currentInputCode = "";
+            document.getElementById('codeDisplay').innerText = "====";
+            
+            if (folderData[id].isLocked) {
+                document.getElementById('keypadArea').style.display = 'flex';
+            } else {
+                document.getElementById('keypadArea').style.display = 'none';
+                alert(`תיקייה "${folderData[id].name}" פתוחה ללא קוד!\nקבצים בפנים: \n${folderData[id].files.join('\n') || 'אין קבצים'}`);
+            }
+        }
+
+        function pressKey(key) {
+            if (!activeFolderId) return;
+            
+            if (key === 'C') {
+                currentInputCode = currentInputCode.slice(0, -1);
+            } else if (key === 'E') {
+                if (currentInputCode === folderData[activeFolderId].code) {
+                    alert(`פיצוח הצליח! תיקייה "${folderData[activeFolderId].name}" נפתחה.\nחומרים מוצגים: ${folderData[activeFolderId].files.join(', ')}`);
+                    document.getElementById('keypadArea').style.display = 'none';
+                } else {
+                    alert("קוד שגוי! נסה שוב.");
+                    currentInputCode = "";
+                }
+            } else {
+                if (currentInputCode.length < 4) currentInputCode += key;
+            }
+            
+            document.getElementById('codeDisplay').innerText = currentInputCode || "====";
+        }
+
+        // הרצה ראשונית של המערכת
+        renderAdminSettings();
+    </script>
+</body>
+</html>

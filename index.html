@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Puff & Chill">
+  <meta name="theme-color" content="#0b1511">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>Puff & Chill</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #0b1511; color: #e0e0e0; display: flex; height: 100dvh; overflow: hidden; }
+
+    /* ===== PANELS ===== */
+    .panel { width: 50%; height: 100%; padding: 16px; display: flex; flex-direction: column; overflow-y: auto; }
+    .player-side { background: #0f2119; border-left: 2px solid #1a3327; }
+    .admin-side  { background: #121c18; }
+
+    /* ===== LOGO ===== */
+    .logo { text-align: center; font-size: 26px; font-weight: bold; color: #ffdf94; margin-bottom: 24px; text-shadow: 0 0 14px rgba(255,223,148,0.35); letter-spacing: 2px; }
+
+    /* ===== FOLDERS GRID ===== */
+    .folders-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 380px; margin: 0 auto; }
+    .folder { background: #1a3327; border: 2px solid #b39247; border-radius: 12px; padding: 18px 10px; text-align: center; cursor: pointer; transition: all 0.2s; user-select: none; }
+    .folder:active { background: #234737; transform: scale(0.97); }
+    .folder .icon { font-size: 36px; margin-bottom: 8px; }
+    .folder .fname { font-weight: bold; font-size: 14px; color: #ffdf94; }
+    .folder .status { font-size: 12px; color: #8fa89b; margin-top: 4px; }
+
+    /* ===== KEYPAD ===== */
+    .keypad-container { margin-top: 24px; display: none; flex-direction: column; align-items: center; gap: 12px; }
+    .keypad-title { font-size: 13px; color: #8fa89b; }
+    .code-display { background: #070d0a; width: 190px; height: 48px; line-height: 48px; text-align: center; font-size: 26px; color: #ffdf94; letter-spacing: 8px; border-radius: 6px; border: 1px solid #2d4a3a; }
+    .grid-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 190px; }
+    .key { background: #162a20; border: 1px solid #b39247; color: #e0e0e0; padding: 14px; font-size: 18px; border-radius: 6px; cursor: pointer; text-align: center; user-select: none; transition: background 0.15s; }
+    .key:active { background: #2d4a3a; }
+    .key-del  { background: #3a1515 !important; border-color: #d9534f !important; }
+    .key-ok   { background: #153a1a !important; border-color: #5cb85c !important; }
+    .keypad-cancel { font-size: 12px; color: #8fa89b; cursor: pointer; text-decoration: underline; margin-top: 4px; }
+
+    /* ===== FILE VIEWER OVERLAY ===== */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .overlay.active { display: flex; }
+    .overlay-close { position: absolute; top: 14px; left: 14px; font-size: 28px; cursor: pointer; color: #ffdf94; }
+    .overlay-title { color: #ffdf94; font-size: 18px; font-weight: bold; margin-bottom: 16px; text-align: center; }
+    .overlay-body { max-width: 90vw; max-height: 75vh; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; overflow-y: auto; }
+    .overlay-body img   { max-width: 100%; max-height: 65vh; border-radius: 8px; border: 1px solid #b39247; }
+    .overlay-body video { max-width: 100%; max-height: 65vh; border-radius: 8px; }
+    .overlay-body .txt-content { background: #0f2119; color: #c5e0c8; padding: 16px; border-radius: 8px; font-size: 14px; white-space: pre-wrap; max-height: 60vh; overflow-y: auto; min-width: 260px; }
+    .file-thumb { display: flex; flex-direction: column; align-items: center; cursor: pointer; gap: 6px; }
+    .file-thumb span { font-size: 12px; color: #8fa89b; max-width: 100px; text-align: center; word-break: break-all; }
+
+    /* ===== ADMIN PANEL ===== */
+    h2 { text-align: center; margin-bottom: 16px; color: #ffdf94; border-bottom: 2px solid #b39247; padding-bottom: 10px; font-size: 16px; }
+    .admin-box { background: #162a20; padding: 14px; border-radius: 10px; margin-bottom: 14px; border: 1px solid #2d4a3a; }
+    .admin-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; font-size: 14px; }
+    .admin-row:last-child { margin-bottom: 0; }
+    input[type="text"] { background: #070d0a; border: 1px solid #b39247; color: white; padding: 5px 8px; border-radius: 4px; width: 110px; text-align: center; font-size: 13px; }
+    .switch { position: relative; display: inline-block; width: 46px; height: 22px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: #555; transition: .3s; border-radius: 22px; }
+    .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 4px; bottom: 4px; background: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background: #5cb85c; }
+    input:checked + .slider:before { transform: translateX(24px); }
+
+    /* ===== FILE LIST ===== */
+    .file-section { margin-top: 10px; }
+    .file-section-title { font-size: 12px; color: #b39247; margin-bottom: 6px; }
+    .file-list-inner { background: #070d0a; border-radius: 6px; padding: 6px; min-height: 28px; }
+    .file-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; color: #a3c2b2; font-size: 13px; border-bottom: 1px solid #1a2e22; }
+    .file-item:last-child { border-bottom: none; }
+    .file-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; cursor: pointer; }
+    .file-item span:hover { color: #ffdf94; }
+    .btn-del { color: #d9534f; cursor: pointer; font-size: 16px; flex-shrink: 0; padding: 0 4px; }
+    .btn-add { background: #1e4d22; color: #5cb85c; border: 1px solid #5cb85c; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 8px; width: 100%; transition: background 0.2s; }
+    .btn-add:active { background: #2a6e30; }
+    .empty-files { color: #4a6a5a; font-size: 12px; text-align: center; padding: 6px; }
+
+    /* ===== TOAST ===== */
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a3327; border: 1px solid #b39247; color: #ffdf94; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+
+    /* ===== INSTALL BANNER ===== */
+    #install-banner { display: none; background: #1a3327; border-top: 1px solid #b39247; padding: 10px 16px; text-align: center; font-size: 13px; position: fixed; bottom: 0; width: 100%; z-index: 50; }
+    #install-banner button { background: #b39247; color: #0b1511; border: none; padding: 6px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-right: 10px; }
+    #install-banner .dismiss { color: #8fa89b; cursor: pointer; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- ===== PLAYER SIDE ===== -->
+<div class="panel player-side">
+  <div class="logo">🌿 PUFF &amp; CHILL</div>
+
+  <div class="folders-container" id="foldersGrid"></div>
+
+  <div class="keypad-container" id="keypadArea">
+    <div class="keypad-title" id="keypadTitle">הזן קוד גישה</div>
+    <div class="code-display" id="codeDisplay">_ _ _ _</div>
+    <div class="grid-keypad">
+      <div class="key" onclick="pressKey('1')">1</div>
+      <div class="key" onclick="pressKey('2')">2</div>
+      <div class="key" onclick="pressKey('3')">3</div>
+      <div class="key" onclick="pressKey('4')">4</div>
+      <div class="key" onclick="pressKey('5')">5</div>
+      <div class="key" onclick="pressKey('6')">6</div>
+      <div class="key" onclick="pressKey('7')">7</div>
+      <div class="key" onclick="pressKey('8')">8</div>
+      <div class="key" onclick="pressKey('9')">9</div>
+      <div class="key key-del" onclick="pressKey('C')">⌫</div>
+      <div class="key" onclick="pressKey('0')">0</div>
+      <div class="key key-ok" onclick="pressKey('E')">✓</div>
+    </div>
+    <div class="keypad-cancel" onclick="closeKeypad()">ביטול</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN SIDE ===== -->
+<div class="panel admin-side">
+  <h2>⚙️ הגדרות מערכת</h2>
+  <div id="adminRoot"></div>
+</div>
+
+<!-- ===== FILE VIEWER OVERLAY ===== -->
+<div class="overlay" id="fileOverlay">
+  <div class="overlay-close" onclick="closeOverlay()">✕</div>
+  <div class="overlay-title" id="overlayTitle"></div>
+  <div class="overlay-body" id="overlayBody"></div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== INSTALL BANNER ===== -->
+<div id="install-banner">
+  📲 התקן את האפליקציה על מסך הבית
+  <button id="install-btn">התקן</button>
+  <span class="dismiss" onclick="document.getElementById('install-banner').style.display='none'">לא עכשיו</span>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="fileInput" multiple accept="*/*" style="display:none">
+
+<script>
+// ===========================
+// DATA LAYER — localStorage
+// ===========================
+const DB_KEY = 'puffchill_data_v2';
+
+const DEFAULT_DATA = {
+  folders: {
+    1: { name: "תיקייה 1", isLocked: true,  code: "1111", files: [] },
+    2: { name: "תיקייה 2", isLocked: false, code: "",     files: [] },
+    3: { name: "תיקייה 3", isLocked: false, code: "",     files: [] },
+    4: { name: "תיקייה 4", isLocked: false, code: "",     files: [] }
+  }
+};
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(DB_KEY);
+    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+}
+
+function saveData() {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(appData)); } catch(e) { showToast("שגיאה בשמירה: נפח אחסון מלא"); }
+}
+
+let appData = loadData();
+let activeFolderId = null;
+let currentInputCode = "";
+
+// ===========================
+// FILE STORAGE — IndexedDB
+// ===========================
+let db;
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('PuffChillFiles', 1);
+    req.onupgradeneeded = e => {
+      e.target.result.createObjectStore('files', { keyPath: 'id' });
+    };
+    req.onsuccess  = e => { db = e.target.result; resolve(db); };
+    req.onerror    = e => reject(e);
+  });
+}
+
+function saveFile(fileId, fileObj) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put({ id: fileId, file: fileObj });
+    tx.oncomplete = resolve;
+    tx.onerror = reject;
+  });
+}
+
+function getFile(fileId) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('files', 'readonly');
+    const req = tx.objectStore('files').get(fileId);
+    req.onsuccess = e => resolve(e.target.result ? e.target.result.file : null);
+    req.onerror = reject;
+  });
+}
+
+function deleteFileDB(fileId) {
+  return new Promise((resolve) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete(fileId);
+    tx.oncomplete = resolve;
+  });
+}
+
+// ===========================
+// TOAST
+// ===========================
+function showToast(msg, duration = 2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ===========================
+// RENDER PLAYER SIDE
+// ===========================
+function renderPlayer() {
+  const grid = document.getElementById('foldersGrid');
+  grid.innerHTML = '';
+  for (let id in appData.folders) {
+    const f = appData.folders[id];
+    const div = document.createElement('div');
+    div.className = 'folder';
+    div.setAttribute('data-id', id);
+    div.onclick = () => clickFolder(Number(id));
+    div.innerHTML = `
+      <div class="icon">${f.isLocked ? '🔒' : '📂'}</div>
+      <div class="fname">${escHtml(f.name)}</div>
+      <div class="status">${f.isLocked ? 'נעול' : 'פתוח'} · ${f.files.length} קבצים</div>
+    `;
+    grid.appendChild(div);
+  }
+}
+
+// ===========================
+// RENDER ADMIN SIDE
+// ===========================
+function renderAdmin() {
+  const root = document.getElementById('adminRoot');
+  root.innerHTML = '';
+  for (let id in appData.folders) {
+    const f = appData.folders[id];
+    const box = document.createElement('div');
+    box.className = 'admin-box';
+    box.innerHTML = `
+      <div class="admin-row">
+        <strong>${escHtml(f.name)}</strong>
+        <label class="switch" title="נעול / פתוח">
+          <input type="checkbox" ${f.isLocked ? 'checked' : ''} onchange="toggleLock(${id}, this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="admin-row">
+        <span>שם:</span>
+        <input type="text" value="${escHtml(f.name)}" oninput="updateName(${id}, this.value)">
+      </div>
+      <div class="admin-row" id="code-row-${id}" style="display:${f.isLocked ? 'flex' : 'none'}">
+        <span>קוד (4 ספרות):</span>
+        <input type="text" value="${escHtml(f.code)}" maxlength="4" pattern="[0-9]*" inputmode="numeric" oninput="updateCode(${id}, this.value)">
+      </div>
+      <div class="file-section">
+        <div class="file-section-title">📁 קבצים בתיקייה (${f.files.length})</div>
+        <div class="file-list-inner" id="files-${id}"></div>
+        <button class="btn-add" onclick="triggerUpload(${id})">📤 העלה קבצים מהמכשיר</button>
+      </div>
+    `;
+    root.appendChild(box);
+    renderFileList(id);
+  }
+}
+
+function renderFileList(id) {
+  const container = document.getElementById(`files-${id}`);
+  if (!container) return;
+  container.innerHTML = '';
+  const files = appData.folders[id].files;
+  if (files.length === 0) {
+    container.innerHTML = '<div class="empty-files">אין קבצים עדיין</div>';
+    return;
+  }
+  files.forEach((file, index) => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.innerHTML = `
+      <span title="לחץ לצפייה" onclick="previewFile('${file.id}', '${escHtml(file.name)}')">${fileIcon(file.name)} ${escHtml(file.name)}</span>
+      <span class="btn-del" onclick="deleteFile(${id}, ${index}, '${file.id}')">🗑️</span>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function fileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) return '🖼️';
+  if (['mp4','webm','mov','avi'].includes(ext)) return '🎬';
+  if (['mp3','wav','ogg','aac'].includes(ext)) return '🎵';
+  if (['pdf'].includes(ext)) return '📄';
+  if (['txt','md'].includes(ext)) return '📝';
+  return '📎';
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===========================
+// ADMIN ACTIONS
+// ===========================
+function toggleLock(id, checked) {
+  appData.folders[id].isLocked = checked;
+  saveData();
+  renderAdmin();
+  renderPlayer();
+}
+
+function updateName(id, val) {
+  appData.folders[id].name = val;
+  saveData();
+  renderPlayer();
+}
+
+function updateCode(id, val) {
+  appData.folders[id].code = val.replace(/[^0-9]/g, '').slice(0, 4);
+  saveData();
+}
+
+// ===========================
+// FILE UPLOAD
+// ===========================
+let currentUploadFolderId = null;
+
+function triggerUpload(id) {
+  currentUploadFolderId = id;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInput').click();
+}
+
+document.getElementById('fileInput').addEventListener('change', async function() {
+  const files = Array.from(this.files);
+  if (!files.length || currentUploadFolderId === null) return;
+
+  let added = 0;
+  for (const file of files) {
+    const fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    try {
+      await saveFile(fileId, file);
+      appData.folders[currentUploadFolderId].files.push({ id: fileId, name: file.name });
+      added++;
+    } catch(e) {
+      showToast(`שגיאה בהעלאת ${file.name}`);
+    }
+  }
+  saveData();
+  renderFileList(currentUploadFolderId);
+  renderPlayer();
+  showToast(`✅ ${added} קובץ/קבצים הועלו בהצלחה`);
+});
+
+async function deleteFile(folderId, index, fileId) {
+  await deleteFileDB(fileId);
+  appData.folders[folderId].files.splice(index, 1);
+  saveData();
+  renderFileList(folderId);
+  renderPlayer();
+  showToast('🗑️ קובץ נמחק');
+}
+
+// ===========================
+// FILE VIEWER
+// ===========================
+async function previewFile(fileId, fileName) {
+  const file = await getFile(fileId);
+  if (!file) { showToast('הקובץ לא נמצא — נסה להעלות מחדש'); return; }
+
+  const overlay = document.getElementById('fileOverlay');
+  const body = document.getElementById('overlayBody');
+  document.getElementById('overlayTitle').textContent = fileName;
+  body.innerHTML = '';
+
+  const ext = fileName.split('.').pop().toLowerCase();
+  const url = URL.createObjectURL(file);
+
+  if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) {
+    const img = document.createElement('img');
+    img.src = url;
+    body.appendChild(img);
+  } else if (['mp4','webm','mov'].includes(ext)) {
+    const video = document.createElement('video');
+    video.src = url; video.controls = true; video.autoplay = true;
+    body.appendChild(video);
+  } else if (['mp3','wav','ogg','aac'].includes(ext)) {
+    const audio = document.createElement('audio');
+    audio.src = url; audio.controls = true; audio.autoplay = true;
+    body.appendChild(audio);
+  } else if (['txt','md'].includes(ext)) {
+    const text = await file.text();
+    const pre = document.createElement('pre');
+    pre.className = 'txt-content';
+    pre.textContent = text;
+    body.appendChild(pre);
+  } else if (ext === 'pdf') {
+    const iframe = document.createElement('iframe');
+    iframe.src = url; iframe.style.cssText = 'width:85vw;height:70vh;border:none;border-radius:8px;';
+    body.appendChild(iframe);
+  } else {
+    body.innerHTML = `<div class="txt-content">לא ניתן להציג קובץ מסוג .${ext}<br><br><a href="${url}" download="${fileName}" style="color:#ffdf94;">לחץ להורדה</a></div>`;
+  }
+
+  overlay.classList.add('active');
+}
+
+function closeOverlay() {
+  document.getElementById('fileOverlay').classList.remove('active');
+  document.getElementById('overlayBody').innerHTML = '';
+}
+
+// ===========================
+// PLAYER FOLDER CLICK
+// ===========================
+function clickFolder(id) {
+  activeFolderId = id;
+  currentInputCode = "";
+  updateDisplay();
+  const f = appData.folders[id];
+  if (f.isLocked) {
+    document.getElementById('keypadTitle').textContent = `קוד גישה: ${escHtml(f.name)}`;
+    document.getElementById('keypadArea').style.display = 'flex';
+  } else {
+    openFolder(id);
+  }
+}
+
+function openFolder(id) {
+  const f = appData.folders[id];
+  document.getElementById('keypadArea').style.display = 'none';
+  if (f.files.length === 0) {
+    showToast(`📂 "${f.name}" פתוח — אין קבצים עדיין`);
+    return;
+  }
+  showFolderViewer(id);
+}
+
+async function showFolderViewer(id) {
+  const f = appData.folders[id];
+  const overlay = document.getElementById('fileOverlay');
+  const body = document.getElementById('overlayBody');
+  document.getElementById('overlayTitle').textContent = `📂 ${f.name} (${f.files.length} קבצים)`;
+  body.innerHTML = '';
+
+  for (const fileRef of f.files) {
+    const file = await getFile(fileRef.id);
+    const ext = fileRef.name.split('.').pop().toLowerCase();
+    const div = document.createElement('div');
+    div.className = 'file-thumb';
+
+    if (file && ['jpg','jpeg','png','gif','webp'].includes(ext)) {
+      const url = URL.createObjectURL(file);
+      div.innerHTML = `<img src="${url}" style="max-width:120px;max-height:100px;border-radius:6px;border:1px solid #b39247;">`;
+    } else {
+      div.innerHTML = `<div style="font-size:40px;">${fileIcon(fileRef.name)}</div>`;
+    }
+    div.innerHTML += `<span>${escHtml(fileRef.name)}</span>`;
+    div.onclick = () => previewFile(fileRef.id, fileRef.name);
+    body.appendChild(div);
+  }
+  overlay.classList.add('active');
+}
+
+// ===========================
+// KEYPAD
+// ===========================
+function pressKey(key) {
+  if (!activeFolderId) return;
+  if (key === 'C') {
+    currentInputCode = currentInputCode.slice(0, -1);
+  } else if (key === 'E') {
+    if (currentInputCode === appData.folders[activeFolderId].code) {
+      showToast(`✅ פיצוח הצליח!`);
+      document.getElementById('keypadArea').style.display = 'none';
+      openFolder(activeFolderId);
+    } else {
+      showToast('❌ קוד שגוי — נסה שוב');
+      currentInputCode = "";
+    }
+  } else {
+    if (currentInputCode.length < 4) currentInputCode += key;
+  }
+  updateDisplay();
+}
+
+function updateDisplay() {
+  const dots = currentInputCode.length;
+  document.getElementById('codeDisplay').textContent = '●'.repeat(dots) + '_ '.repeat(4 - dots).trim();
+}
+
+function closeKeypad() {
+  document.getElementById('keypadArea').style.display = 'none';
+  currentInputCode = "";
+  activeFolderId = null;
+}
+
+// ===========================
+// PWA INSTALL
+// ===========================
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').style.display = 'block';
+});
+
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') showToast('✅ האפליקציה הותקנה!');
+  deferredPrompt = null;
+  document.getElementById('install-banner').style.display = 'none';
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').style.display = 'none';
+  showToast('🎉 Puff & Chill הותקנה בהצלחה!');
+});
+
+// ===========================
+// SERVICE WORKER
+// ===========================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ===========================
+// INIT
+// ===========================
+openDB().then(() => {
+  renderPlayer();
+  renderAdmin();
+}).catch(e => {
+  console.error('IndexedDB error:', e);
+  renderPlayer();
+  renderAdmin();
+});
+</script>
+</body>
+</html>
