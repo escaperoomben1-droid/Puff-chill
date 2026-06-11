@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,9 +13,9 @@
 <title>Puff & Chill</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
-/* תיקון: שינוי ל-min-height והתרת גלילה אנכית כדי למנוע חיתוך מסך בטאבלט */
+
 body { background: #0b1511; color: #e0e0e0; min-height: 100dvh; overflow-y: auto; }
-/* תיקון: שינוי ל-min-height כדי שהתוכן יוכל להתרחב למטה כשהמקלדת נפתחת */
+
 #playerScreen { width: 100%; min-height: 100dvh; background: #0f2119; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
 
 .logo { font-size: 32px; font-weight: bold; color: #ffdf94; text-shadow: 0 0 18px rgba(255,223,148,0.4); letter-spacing: 3px; margin-bottom: 40px; user-select: none; cursor: default; padding: 10px 20px; border-radius: 10px; transition: background 0.2s; }
@@ -82,12 +82,12 @@ input:checked + .slider:before { transform: translateX(24px); }
 .overlay-body .txt-content { background: #0f2119; color: #c5e0c8; padding: 16px; border-radius: 8px; font-size: 14px; white-space: pre-wrap; max-height: 60vh; overflow-y: auto; min-width: 260px; }
 .file-thumb { display: flex; flex-direction: column; align-items: center; cursor: pointer; gap: 6px; }
 .file-thumb span { font-size: 12px; color: #8fa89b; max-width: 110px; text-align: center; word-break: break-all; }
-/* תוספת: סגירת הסטייל של ה-Toast שהיה חסר בקוד המקור */
+
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a3327; border: 1px solid #b39247; color: #e0e0e0; padding: 12px 24px; border-radius: 8px; z-index: 400; display: none; }
 .toast.active { display: block; }
 
-/* תוספת מיוחדת: התאמה רספונסיבית חכמה למסכים אנכיים וצרים (כמו טאבלטים וסמארטפונים) */
-@media (max-width: 768px) and (orientation: portrait) {
+/* התאמה רספונסיבית קבועה למסכים אנכיים */
+@media (max-width: 1024px) {
 .logo { font-size: 26px; margin-bottom: 20px; padding: 6px 12px; }
 .folders-container { gap: 12px; max-width: 100%; }
 .folder { padding: 16px 10px; border-radius: 10px; }
@@ -101,15 +101,9 @@ input:checked + .slider:before { transform: translateX(24px); }
 </head>
 <body>
 
-<!-- מסך המשחק / הנגן הראשי -->
 <div id="playerScreen">
 <div class="logo">Puff & Chill</div>
-
-<div class="folders-container">
-<!-- כאן נכנסות התיקיות שלך בצורה דינמית או סטטית מהג'אווהסקריפט -->
-</div>
-
-<!-- המקלדת להקשת הקוד -->
+<div class="folders-container"></div>
 <div class="keypad-container" id="keypadSection">
 <div class="keypad-title">הקש קוד גישה:</div>
 <div class="code-display" id="codeDisplay"></div>
@@ -122,3 +116,15 @@ input:checked + .slider:before { transform: translateX(24px); }
 <button class="key">6</button>
 <button class="key">7</button>
 <button class="key">8</button>
+<button class="key">9</button>
+<button class="key key-del">דלג</button>
+<button class="key">0</button>
+<button class="key key-ok">אישור</button>
+</div>
+<div class="keypad-cancel" id="cancelKeypad">ביטול</div>
+</div>
+</div>
+
+<div id="adminLoginOverlay">
+<div class="title">כניסת מנהל</div>
+<div class="subtitle">הקש סיסמת מנהל:</div>
